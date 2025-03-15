@@ -46,6 +46,7 @@ function App() {
   const [contextLength, setContextLength] = useState<number>(4096);
   const [memoryMode, setMemoryMode] = useState<MemoryMode>('DISCRETE_GPU');
   const [systemMemory, setSystemMemory] = useState<number>(128); // in GB
+  const [gpuVram, setGpuVram] = useState<number>(24); // in GB, default 24GB
 
   // -----------------------------------
   // 2. HELPER FUNCTIONS
@@ -54,17 +55,17 @@ function App() {
   // (A) Bits-based multiplier for the main model
   const getModelQuantFactor = (q: ModelQuantization): number => {
     switch (q) {
-      case 'F32': return 4.0;  
-      case 'F16': return 2.0;  
-      case 'Q8':  return 1.0;  
-      case 'Q6':  return 0.75; 
-      case 'Q5':  return 0.625;
-      case 'Q4':  return 0.5;  
-      case 'Q3':  return 0.375; 
-      case 'Q2':  return 0.25;  
-      case 'GPTQ':return 0.4;  
-      case 'AWQ': return 0.35; 
-      default:    return 1.0;   // fallback
+      case 'F32': return 4.0;
+      case 'F16': return 2.0;
+      case 'Q8': return 1.0;
+      case 'Q6': return 0.75;
+      case 'Q5': return 0.625;
+      case 'Q4': return 0.5;
+      case 'Q3': return 0.375;
+      case 'Q2': return 0.25;
+      case 'GPTQ': return 0.4;
+      case 'AWQ': return 0.35;
+      default: return 1.0;   // fallback
     }
   };
 
@@ -72,12 +73,12 @@ function App() {
   // F32, F16, Q8, Q5, Q4
   const getKvCacheQuantFactor = (k: KvCacheQuantization): number => {
     switch (k) {
-      case 'F32': return 4.0;  
-      case 'F16': return 2.0;  
-      case 'Q8':  return 1.0;  
-      case 'Q5':  return 0.625; 
-      case 'Q4':  return 0.5;  
-      default:    return 1.0;   // fallback
+      case 'F32': return 4.0;
+      case 'F16': return 2.0;
+      case 'Q8': return 1.0;
+      case 'Q5': return 0.625;
+      case 'Q4': return 0.5;
+      default: return 1.0;   // fallback
     }
   };
 
@@ -137,10 +138,10 @@ function App() {
     }
 
     // Discrete GPU
-    const singleGpuVram = 24;
+    const singleGpuVram = gpuVram;
     if (requiredVram <= singleGpuVram) {
       return {
-        gpuType: 'Single 24GB GPU',
+        gpuType: `Single ${singleGpuVram}GB GPU`,
         vramNeeded: requiredVram.toFixed(1),
         fitsUnified: false,
         systemRamNeeded: Math.max(recSystemMemory, requiredVram),
@@ -150,7 +151,7 @@ function App() {
       // multiple GPUs
       const count = Math.ceil(requiredVram / singleGpuVram);
       return {
-        gpuType: 'Discrete GPUs (24GB each)',
+        gpuType: `Discrete GPUs (${singleGpuVram}GB each)`,
         vramNeeded: requiredVram.toFixed(1),
         fitsUnified: false,
         systemRamNeeded: Math.max(recSystemMemory, requiredVram),
@@ -165,15 +166,15 @@ function App() {
     switch (modelQuant) {
       case 'F32': bitsPerParam = 32; break;
       case 'F16': bitsPerParam = 16; break;
-      case 'Q8':  bitsPerParam = 8;  break;
-      case 'Q6':  bitsPerParam = 6;  break;
-      case 'Q5':  bitsPerParam = 5;  break;
-      case 'Q4':  bitsPerParam = 4;  break;
-      case 'Q3':  bitsPerParam = 3;  break;
-      case 'Q2':  bitsPerParam = 2;  break;
-      case 'GPTQ':bitsPerParam = 4;  break;
-      case 'AWQ': bitsPerParam = 4;  break;
-      default:    bitsPerParam = 8;  break;
+      case 'Q8': bitsPerParam = 8; break;
+      case 'Q6': bitsPerParam = 6; break;
+      case 'Q5': bitsPerParam = 5; break;
+      case 'Q4': bitsPerParam = 4; break;
+      case 'Q3': bitsPerParam = 3; break;
+      case 'Q2': bitsPerParam = 2; break;
+      case 'GPTQ': bitsPerParam = 4; break;
+      case 'AWQ': bitsPerParam = 4; break;
+      default: bitsPerParam = 8; break;
     }
 
     const totalBits = params * 1e9 * bitsPerParam;
@@ -181,6 +182,16 @@ function App() {
     const gigabytes = bytes / 1e9;
     const overheadFactor = 1.1; // ~10% overhead
     return gigabytes * overheadFactor;
+  };
+
+    const handleInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    setter: React.Dispatch<React.SetStateAction<number>>
+  ) => {
+    const newValue = Number(event.target.value);
+    if (!isNaN(newValue)) {
+      setter(newValue);
+    }
   };
 
   // -----------------------------------
@@ -204,16 +215,25 @@ function App() {
           <h2 className="section-title">Model Configuration</h2>
 
           <label className="label-range">
-            Number of Parameters (Billions): {params}
+            Number of Parameters (Billions): 
+            <input className="text-input-group"
+              type="number"
+              min={1}
+              max={1000}
+              value={params}
+              onChange={(e) => handleInputChange(e, setParams)}
+            />
           </label>
-          <input
-            type="range"
-            min={1}
-            max={1000}
-            value={params}
-            onChange={(e) => setParams(Number(e.target.value))}
-          />
-
+          <div className="slider-input-group">
+            <input
+              type="range"
+              min={1}
+              max={1000}
+              value={params}
+              onChange={(e) => setParams(Number(e.target.value))}
+            />
+            
+          </div>
           <label className="label-range">Model Quantization:</label>
           <select
             value={modelQuant}
@@ -233,16 +253,27 @@ function App() {
           </select>
 
           <label className="label-range">
-            Context Length (Tokens): {contextLength}
+            Context Length (Tokens):
+            <input className="text-input-group"
+              type="number"
+              min={128}
+              max={32768}
+              step={128}
+              value={contextLength}
+              onChange={(e) => handleInputChange(e, setContextLength)}
+            />
           </label>
-          <input
-            type="range"
-            min={128}
-            max={32768}
-            step={128}
-            value={contextLength}
-            onChange={(e) => setContextLength(Number(e.target.value))}
-          />
+          <div className="slider-input-group">
+            <input
+              type="range"
+              min={128}
+              max={32768}
+              step={128}
+              value={contextLength}
+              onChange={(e) => setContextLength(Number(e.target.value))}
+            />
+           
+          </div>
 
           {/* KV Cache Toggle */}
           <div className="checkbox-row">
@@ -260,19 +291,19 @@ function App() {
              We'll wrap it in a div that transitions "max-height"
              so the UI doesn't jump abruptly.
           */}
-<div className={`kvCacheAnimate ${useKvCache ? "open" : "closed"}`}>
-  <label className="label-range">KV Cache Quantization:</label>
-  <select
-    value={kvCacheQuant}
-    onChange={(e) => setKvCacheQuant(e.target.value as KvCacheQuantization)}
-  >
-    <option value="F32">F32</option>
-    <option value="F16">F16</option>
-    <option value="Q8">Q8</option>
-    <option value="Q5">Q5</option>
-    <option value="Q4">Q4</option>
-  </select>
-</div>
+          <div className={`kvCacheAnimate ${useKvCache ? "open" : "closed"}`}>
+            <label className="label-range">KV Cache Quantization:</label>
+            <select
+              value={kvCacheQuant}
+              onChange={(e) => setKvCacheQuant(e.target.value as KvCacheQuantization)}
+            >
+              <option value="F32">F32</option>
+              <option value="F16">F16</option>
+              <option value="Q8">Q8</option>
+              <option value="Q5">Q5</option>
+              <option value="Q4">Q4</option>
+            </select>
+          </div>
 
 
 
@@ -291,17 +322,47 @@ function App() {
             </option>
           </select>
 
+          {memoryMode === 'DISCRETE_GPU' && (
+            <>
+              <label className="label-range">GPU VRAM (GB):</label>
+              <select
+                value={gpuVram}
+                onChange={(e) => setGpuVram(Number(e.target.value))}
+              >
+                <option value={8}>8</option>
+                <option value={12}>12</option>
+                <option value={16}>16</option>
+                <option value={24}>24</option>
+                <option value={32}>32</option>
+                <option value={40}>40</option>
+                <option value={48}>48</option>
+                <option value={80}>80</option>
+              </select>
+            </>
+          )}
+
           <label className="label-range">
-            System Memory (GB): {systemMemory}
+            System Memory (GB): 
+            <input className="text-input-group"
+              type="number"
+              min={8}
+              max={512}
+              step={8}
+              value={systemMemory}
+              onChange={(e) => handleInputChange(e, setSystemMemory)}
+            />
           </label>
-          <input
-            type="range"
-            min={8}
-            max={512}
-            step={8}
-            value={systemMemory}
-            onChange={(e) => setSystemMemory(Number(e.target.value))}
-          />
+           <div className="slider-input-group">
+            <input
+              type="range"
+              min={8}
+              max={512}
+              step={8}
+              value={systemMemory}
+              onChange={(e) => setSystemMemory(Number(e.target.value))}
+            />
+           
+           </div>
         </div>
 
         {/* Right Panel: Results */}
