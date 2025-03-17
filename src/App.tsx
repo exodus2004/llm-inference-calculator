@@ -1,33 +1,10 @@
 import { useState } from 'react';
 import './App.css';
-
-/** Memory mode: discrete GPU or unified memory. */
-type MemoryMode = 'DISCRETE_GPU' | 'UNIFIED_MEMORY';
-
-/** Model quantization set: F32, F16, Q8, Q6, Q5, Q4, Q3, Q2, GPTQ, AWQ. */
-type ModelQuantization =
-  | 'F32'
-  | 'F16'
-  | 'Q8'
-  | 'Q6'
-  | 'Q5'
-  | 'Q4'
-  | 'Q3'
-  | 'Q2'
-  | 'GPTQ'
-  | 'AWQ';
-
-/** KV cache quantization: F32, F16, Q8, Q5, Q4. */
-type KvCacheQuantization = 'F32' | 'F16' | 'Q8' | 'Q5' | 'Q4';
-
-/** Recommendation for final output. */
-interface Recommendation {
-  gpuType: string;         // e.g., 'Single 24GB GPU' or 'Unified memory...'
-  vramNeeded: string;      // e.g., "32.5"
-  fitsUnified: boolean;    // relevant if memoryMode = 'UNIFIED_MEMORY'
-  systemRamNeeded: number; // in GB
-  gpusRequired: number;    // discrete GPUs required (0 if doesn't fit)
-}
+import { MemoryMode, ModelQuantization, KvCacheQuantization } from './types';
+import { 
+  calculateHardwareRecommendation, 
+  calculateOnDiskSize
+} from './calculations';
 
 function App() {
   // -----------------------------------
@@ -39,8 +16,8 @@ function App() {
   const [modelQuant, setModelQuant] = useState<ModelQuantization>('Q4');
 
   // KV Cache
-  const [useKvCache, setUseKvCache] = useState<boolean>(true);
-  const [kvCacheQuant, setKvCacheQuant] = useState<KvCacheQuantization>('F16');
+  const [useKvCache, setUseKvCache] = useState<boolean>(false); // Changed from true to false
+  const [kvCacheQuant, setKvCacheQuant] = useState<KvCacheQuantization>('Q4'); // Changed from 'F16' to 'Q4'
 
   // Misc
   const [contextLength, setContextLength] = useState<number>(4096);
@@ -52,139 +29,7 @@ function App() {
   // 2. HELPER FUNCTIONS
   // -----------------------------------
 
-  // (A) Bits-based multiplier for the main model
-  const getModelQuantFactor = (q: ModelQuantization): number => {
-    switch (q) {
-      case 'F32': return 4.0;
-      case 'F16': return 2.0;
-      case 'Q8': return 1.0;
-      case 'Q6': return 0.75;
-      case 'Q5': return 0.625;
-      case 'Q4': return 0.5;
-      case 'Q3': return 0.375;
-      case 'Q2': return 0.25;
-      case 'GPTQ': return 0.4;
-      case 'AWQ': return 0.35;
-      default: return 1.0;   // fallback
-    }
-  };
-
-  // (B) Bits-based multiplier for KV cache
-  // F32, F16, Q8, Q5, Q4
-  const getKvCacheQuantFactor = (k: KvCacheQuantization): number => {
-    switch (k) {
-      case 'F32': return 4.0;
-      case 'F16': return 2.0;
-      case 'Q8': return 1.0;
-      case 'Q5': return 0.625;
-      case 'Q4': return 0.5;
-      default: return 1.0;   // fallback
-    }
-  };
-
-  /**
-   * (C) Calculate VRAM for single-user inference.
-   * Split into Model Memory + KV Cache Memory.
-   */
-  const calculateRequiredVram = (): number => {
-    // 1) Model memory
-    const modelFactor = getModelQuantFactor(modelQuant);
-    const baseModelMem = params * modelFactor; // GB if 1B params
-
-    // 2) Context scaling (just as before)
-    let contextScale = contextLength / 2048;
-    if (contextScale < 1) contextScale = 1;
-    const modelMem = baseModelMem * contextScale;
-
-    // 3) KV cache memory (if enabled)
-    let kvCacheMem = 0;
-    if (useKvCache) {
-      const kvFactor = getKvCacheQuantFactor(kvCacheQuant);
-      const alpha = 0.2; // fraction representing typical KV overhead
-      kvCacheMem = params * kvFactor * contextScale * alpha;
-    }
-
-    // 4) total
-    return modelMem + kvCacheMem;
-  };
-
-  // For unified memory, up to 75% of system RAM can be used as VRAM
-  const getMaxUnifiedVram = (memGB: number): number => memGB * 0.75;
-
-  // Decide discrete GPU vs. unified memory usage
-  const calculateHardwareRecommendation = (): Recommendation => {
-    const requiredVram = calculateRequiredVram();
-    const recSystemMemory = systemMemory;
-
-    if (memoryMode === 'UNIFIED_MEMORY') {
-      const unifiedLimit = getMaxUnifiedVram(recSystemMemory);
-      if (requiredVram <= unifiedLimit) {
-        return {
-          gpuType: 'Unified memory (ex: Apple silicon, AMD Ryzen™ Al Max+ 395)',
-          vramNeeded: requiredVram.toFixed(1),
-          fitsUnified: true,
-          systemRamNeeded: recSystemMemory,
-          gpusRequired: 1,
-        };
-      } else {
-        return {
-          gpuType: 'Unified memory (insufficient)',
-          vramNeeded: requiredVram.toFixed(1),
-          fitsUnified: false,
-          systemRamNeeded: recSystemMemory,
-          gpusRequired: 0,
-        };
-      }
-    }
-
-    // Discrete GPU
-    const singleGpuVram = gpuVram;
-    if (requiredVram <= singleGpuVram) {
-      return {
-        gpuType: `Single ${singleGpuVram}GB GPU`,
-        vramNeeded: requiredVram.toFixed(1),
-        fitsUnified: false,
-        systemRamNeeded: Math.max(recSystemMemory, requiredVram),
-        gpusRequired: 1,
-      };
-    } else {
-      // multiple GPUs
-      const count = Math.ceil(requiredVram / singleGpuVram);
-      return {
-        gpuType: `Discrete GPUs (${singleGpuVram}GB each)`,
-        vramNeeded: requiredVram.toFixed(1),
-        fitsUnified: false,
-        systemRamNeeded: Math.max(recSystemMemory, requiredVram),
-        gpusRequired: count,
-      };
-    }
-  };
-
-  /** Estimate on-disk model size (GB). We do NOT factor in KV here. */
-  const calculateOnDiskSize = (): number => {
-    let bitsPerParam: number;
-    switch (modelQuant) {
-      case 'F32': bitsPerParam = 32; break;
-      case 'F16': bitsPerParam = 16; break;
-      case 'Q8': bitsPerParam = 8; break;
-      case 'Q6': bitsPerParam = 6; break;
-      case 'Q5': bitsPerParam = 5; break;
-      case 'Q4': bitsPerParam = 4; break;
-      case 'Q3': bitsPerParam = 3; break;
-      case 'Q2': bitsPerParam = 2; break;
-      case 'GPTQ': bitsPerParam = 4; break;
-      case 'AWQ': bitsPerParam = 4; break;
-      default: bitsPerParam = 8; break;
-    }
-
-    const totalBits = params * 1e9 * bitsPerParam;
-    const bytes = totalBits / 8;
-    const gigabytes = bytes / 1e9;
-    const overheadFactor = 1.1; // ~10% overhead
-    return gigabytes * overheadFactor;
-  };
-
-    const handleInputChange = (
+  const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     setter: React.Dispatch<React.SetStateAction<number>>
   ) => {
@@ -197,8 +42,18 @@ function App() {
   // -----------------------------------
   // 3. CALCULATE & RENDER
   // -----------------------------------
-  const recommendation = calculateHardwareRecommendation();
-  const onDiskSize = calculateOnDiskSize();
+  const recommendation = calculateHardwareRecommendation(
+    params,
+    modelQuant,
+    contextLength,
+    useKvCache,
+    kvCacheQuant,
+    memoryMode,
+    systemMemory,
+    gpuVram
+  );
+  
+  const onDiskSize = calculateOnDiskSize(params, modelQuant);
 
   return (
     <div className="App">

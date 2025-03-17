@@ -1,0 +1,8 @@
+services:
+  llm-inference-calculator:
+    build: .
+    container_name: llm-inference-calculator
+    environment:
+      - PORT=${PORT:-3000}
+    ports:
+      - "${PORT:-3000}:80"
