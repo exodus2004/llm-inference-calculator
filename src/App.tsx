@@ -19,6 +19,9 @@ function App() {
   const [useKvCache, setUseKvCache] = useState<boolean>(false); // Changed from true to false
   const [kvCacheQuant, setKvCacheQuant] = useState<KvCacheQuantization>('Q4'); // Changed from 'F16' to 'Q4'
 
+  // Inference mode
+  const [inferenceMode, setInferenceMode] = useState<'incremental' | 'bulk'>('incremental');
+
   // Misc
   const [contextLength, setContextLength] = useState<number>(4096);
   const [memoryMode, setMemoryMode] = useState<MemoryMode>('DISCRETE_GPU');
@@ -50,7 +53,8 @@ function App() {
     kvCacheQuant,
     memoryMode,
     systemMemory,
-    gpuVram
+    gpuVram,
+    inferenceMode
   );
   
   const onDiskSize = calculateOnDiskSize(params, modelQuant);
@@ -130,6 +134,16 @@ function App() {
            
           </div>
 
+          {/* Inference Mode */}
+          <label className="label-range">Inference Mode:</label>
+          <select
+            value={inferenceMode}
+            onChange={(e) => setInferenceMode(e.target.value as 'incremental' | 'bulk')}
+          >
+            <option value="incremental">Incremental (streaming)</option>
+            <option value="bulk">Bulk (all at once)</option>
+          </select>
+
           {/* KV Cache Toggle */}
           <div className="checkbox-row">
             <input
@@ -159,8 +173,6 @@ function App() {
               <option value="Q4">Q4</option>
             </select>
           </div>
-
-
 
           <hr style={{ margin: '1rem 0' }} />
 
