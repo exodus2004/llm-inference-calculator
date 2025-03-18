@@ -82,6 +82,12 @@ function App() {
               value={params}
               onChange={(e) => handleInputChange(e, setParams)}
             />
+            <span className="info-icon">
+              i
+              <span className="tooltip-text">
+                The total number of model parameters in billions. For example, "13" means a 13B model.
+              </span>
+            </span>
           </label>
           <div className="slider-input-group">
             <input
@@ -93,7 +99,15 @@ function App() {
             />
             
           </div>
-          <label className="label-range">Model Quantization:</label>
+          <label className="label-range">
+            Model Quantization:
+            <span className="info-icon">
+              i
+              <span className="tooltip-text">
+                The data format used to store model weights in GPU memory. For instance, F16 uses ~2GB per 1B params, Q4 ~0.5GB, etc.
+              </span>
+            </span>
+          </label>
           <select
             value={modelQuant}
             onChange={(e) => setModelQuant(e.target.value as ModelQuantization)}
@@ -121,6 +135,12 @@ function App() {
               value={contextLength}
               onChange={(e) => handleInputChange(e, setContextLength)}
             />
+            <span className="info-icon">
+              i
+              <span className="tooltip-text">
+                Maximum tokens (including prompt and history) available at once. Larger context = more memory usage.
+              </span>
+            </span>
           </label>
           <div className="slider-input-group">
             <input
@@ -135,7 +155,15 @@ function App() {
           </div>
 
           {/* Inference Mode */}
-          <label className="label-range">Inference Mode:</label>
+          <label className="label-range">
+            Inference Mode:
+            <span className="info-icon">
+              i
+              <span className="tooltip-text">
+                "Incremental" is streaming token-by-token generation, "Bulk" processes the entire context in one pass.
+              </span>
+            </span>
+          </label>
           <select
             value={inferenceMode}
             onChange={(e) => setInferenceMode(e.target.value as 'incremental' | 'bulk')}
@@ -152,7 +180,15 @@ function App() {
               onChange={() => setUseKvCache(!useKvCache)}
               id="kvCache"
             />
-            <label htmlFor="kvCache">Enable KV Cache</label>
+            <label htmlFor="kvCache">
+              Enable KV Cache
+              <span className="info-icon">
+                i
+                <span className="tooltip-text">
+                  Reuses key/value attention states to accelerate decoding, at the cost of additional VRAM.
+                </span>
+              </span>
+            </label>
           </div>
 
           {/* 
@@ -161,7 +197,15 @@ function App() {
              so the UI doesn't jump abruptly.
           */}
           <div className={`kvCacheAnimate ${useKvCache ? "open" : "closed"}`}>
-            <label className="label-range">KV Cache Quantization:</label>
+            <label className="label-range">
+              KV Cache Quantization:
+              <span className="info-icon">
+                i
+                <span className="tooltip-text">
+                  Data format for KV cache memory usage. Lower precision reduces memory but may affect performance/quality.
+                </span>
+              </span>
+            </label>
             <select
               value={kvCacheQuant}
               onChange={(e) => setKvCacheQuant(e.target.value as KvCacheQuantization)}

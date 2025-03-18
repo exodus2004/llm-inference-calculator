@@ -187,3 +187,37 @@ select {
   max-height: 0;
   opacity: 0;
 }
+
+/* Info icon tooltip styles */
+.info-icon {
+  margin-left: 0.5rem;
+  background-color: var(--accent-color);
+  color: #fff;
+  display: inline-block;
+  text-align: center;
+  line-height: 1rem;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.info-icon .tooltip-text {
+  display: none;
+  position: absolute;
+  background-color: #333;
+  color: #fff;
+  padding: 0.25rem;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  top: 1.5rem;
+  left: 0;
+  width: 200px;
+  z-index: 999;
+}
+
+.info-icon:hover .tooltip-text {
+  display: block;
+}
