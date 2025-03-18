@@ -98,7 +98,9 @@ button:focus-visible {
   }
   .input-panel {
     width: 100%;
+    box-sizing: border-box;
   }
+
 }
 
 /* Add some styling for better visual appeal */

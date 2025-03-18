@@ -54,7 +54,6 @@ body {
   max-height: 85vh;
   overflow-y: auto;
   padding: 1rem;
-  box-sizing: border-box;
   background-color: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: var(--border-radius);
