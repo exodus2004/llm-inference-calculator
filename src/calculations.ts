@@ -1,4 +1,9 @@
-import { MemoryMode, ModelQuantization, KvCacheQuantization, Recommendation } from './types';
+import {
+  MemoryMode,
+  ModelQuantization,
+  KvCacheQuantization,
+  Recommendation,
+} from './types';
 
 type InferenceMode = 'incremental' | 'bulk';
 
@@ -9,17 +14,28 @@ type InferenceMode = 'incremental' | 'bulk';
  */
 export const getModelQuantFactor = (q: ModelQuantization): number => {
   switch (q) {
-    case 'F32':  return 4.0;
-    case 'F16':  return 2.0;
-    case 'Q8':   return 1.0;
-    case 'Q6':   return 0.75;
-    case 'Q5':   return 0.625;
-    case 'Q4':   return 0.5;
-    case 'Q3':   return 0.375;
-    case 'Q2':   return 0.25;
-    case 'GPTQ': return 0.4;  // approximate factor for GPTQ quantization
-    case 'AWQ':  return 0.35; // approximate factor for AWQ quantization
-    default:     return 1.0;
+    case 'F32':
+      return 4.0;
+    case 'F16':
+      return 2.0;
+    case 'Q8':
+      return 1.0;
+    case 'Q6':
+      return 0.75;
+    case 'Q5':
+      return 0.625;
+    case 'Q4':
+      return 0.5;
+    case 'Q3':
+      return 0.375;
+    case 'Q2':
+      return 0.25;
+    case 'GPTQ':
+      return 0.4; // approximate factor for GPTQ quantization
+    case 'AWQ':
+      return 0.35; // approximate factor for AWQ quantization
+    default:
+      return 1.0;
   }
 };
 
@@ -29,12 +45,18 @@ export const getModelQuantFactor = (q: ModelQuantization): number => {
  */
 export const getKvCacheQuantFactor = (k: KvCacheQuantization): number => {
   switch (k) {
-    case 'F32': return 4.0;
-    case 'F16': return 2.0;
-    case 'Q8':  return 1.0;
-    case 'Q5':  return 0.625;
-    case 'Q4':  return 0.5;
-    default:    return 1.0;
+    case 'F32':
+      return 4.0;
+    case 'F16':
+      return 2.0;
+    case 'Q8':
+      return 1.0;
+    case 'Q5':
+      return 0.625;
+    case 'Q4':
+      return 0.5;
+    default:
+      return 1.0;
   }
 };
 
@@ -51,14 +73,13 @@ export const getKvCacheQuantFactor = (k: KvCacheQuantization): number => {
  *  - Finally, an overhead factor of ~10% is applied for fragmentation and extra buffers.
  */
 export const calculateRequiredVram = (
-  params: number,              // number of model parameters in *billions*
+  params: number, // number of model parameters in *billions*
   modelQuant: ModelQuantization,
   contextLength: number,
   useKvCache: boolean,
   kvCacheQuant: KvCacheQuantization,
   inferenceMode: InferenceMode
 ): number => {
-
   // 1) Base model memory is independent of context length.
   const modelFactor = getModelQuantFactor(modelQuant);
   const baseModelMem = params * modelFactor; // e.g. 8B params * 2.0 = 16GB for an 8B FP16 model
@@ -82,7 +103,7 @@ export const calculateRequiredVram = (
     // Bulk forward pass:
     // In bulk mode, the entire context is processed at once, leading to a larger memory footprint.
     // We use a larger alpha value (bulkAlphaAt2048) to represent the higher overhead.
-    const bulkAlphaAt2048 = 0.5;  // Rough estimate for full activation storage at 2048 tokens.
+    const bulkAlphaAt2048 = 0.5; // Rough estimate for full activation storage at 2048 tokens.
     const bulkScale = contextLength / 2048;
     contextMem = baseModelMem * bulkAlphaAt2048 * bulkScale;
 
@@ -134,12 +155,14 @@ export const calculateHardwareRecommendation = (
   // Adjust system RAM calculation to include additional bulk activation memory.
   // For incremental mode, assume half of base memory is needed.
   // For bulk mode, add extra memory proportional to the context length.
-  const baseSystemRamNeeded = params * getModelQuantFactor(modelQuant) * 0.5 +
-                              (inferenceMode === 'bulk' ? contextLength / 1024 : 0);
+  const baseSystemRamNeeded =
+    params * getModelQuantFactor(modelQuant) * 0.5 +
+    (inferenceMode === 'bulk' ? contextLength / 1024 : 0);
   const systemRamNeeded = Math.max(8, baseSystemRamNeeded); // Ensure at least 8GB is recommended.
 
   // Determine if the required VRAM fits within unified memory mode.
-  const fitsUnified = memoryMode === 'UNIFIED_MEMORY' && systemMemory >= requiredVram;
+  const fitsUnified =
+    memoryMode === 'UNIFIED_MEMORY' && systemMemory >= requiredVram;
 
   // Calculate discrete GPU requirements.
   let gpusRequired = 0;
@@ -168,7 +191,7 @@ export const calculateHardwareRecommendation = (
     vramNeeded: requiredVram.toFixed(2),
     fitsUnified,
     systemRamNeeded,
-    gpusRequired
+    gpusRequired,
   };
 };
 
@@ -188,5 +211,5 @@ export const calculateOnDiskSize = (
   // Convert GB per 1B params to bits per parameter.
   const bitsPerParam = modelFactor * 8;
   const totalBits = params * 1e9 * bitsPerParam;
-  return totalBits / 8 / 1e9;  // Convert bytes to GB
+  return totalBits / 8 / 1e9; // Convert bytes to GB
 };

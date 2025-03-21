@@ -69,7 +69,7 @@ button:focus-visible {
 
 /* index.css */
 /* ... (Existing styles) */
-.text-input-group{
+.text-input-group {
   margin: 0px 5px;
   font-size: 1rem;
   padding: 1px;
@@ -100,7 +100,6 @@ button:focus-visible {
     width: 100%;
     box-sizing: border-box;
   }
-
 }
 
 /* Add some styling for better visual appeal */

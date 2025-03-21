@@ -5,4 +5,4 @@ services:
     environment:
       - PORT=${PORT:-3000}
     ports:
-      - "${PORT:-3000}:80"
+      - '${PORT:-3000}:80'

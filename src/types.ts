@@ -19,9 +19,9 @@ export type KvCacheQuantization = 'F32' | 'F16' | 'Q8' | 'Q5' | 'Q4';
 
 /** Recommendation for final output. */
 export interface Recommendation {
-  gpuType: string;         // e.g., 'Single 24GB GPU' or 'Unified memory...'
-  vramNeeded: string;      // e.g., "32.5"
-  fitsUnified: boolean;    // relevant if memoryMode = 'UNIFIED_MEMORY'
+  gpuType: string; // e.g., 'Single 24GB GPU' or 'Unified memory...'
+  vramNeeded: string; // e.g., "32.5"
+  fitsUnified: boolean; // relevant if memoryMode = 'UNIFIED_MEMORY'
   systemRamNeeded: number; // in GB
-  gpusRequired: number;    // discrete GPUs required (0 if doesn't fit)
+  gpusRequired: number; // discrete GPUs required (0 if doesn't fit)
 }

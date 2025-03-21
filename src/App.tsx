@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import './App.css';
 import { MemoryMode, ModelQuantization, KvCacheQuantization } from './types';
-import { 
-  calculateHardwareRecommendation, 
-  calculateOnDiskSize
+import {
+  calculateHardwareRecommendation,
+  calculateOnDiskSize,
 } from './calculations';
 
 function App() {
@@ -20,7 +20,9 @@ function App() {
   const [kvCacheQuant, setKvCacheQuant] = useState<KvCacheQuantization>('Q4'); // Changed from 'F16' to 'Q4'
 
   // Inference mode
-  const [inferenceMode, setInferenceMode] = useState<'incremental' | 'bulk'>('incremental');
+  const [inferenceMode, setInferenceMode] = useState<'incremental' | 'bulk'>(
+    'incremental'
+  );
 
   // Misc
   const [contextLength, setContextLength] = useState<number>(4096);
@@ -56,7 +58,7 @@ function App() {
     gpuVram,
     inferenceMode
   );
-  
+
   const onDiskSize = calculateOnDiskSize(params, modelQuant);
 
   return (
@@ -74,8 +76,9 @@ function App() {
           <h2 className="section-title">Model Configuration</h2>
 
           <label className="label-range">
-            Number of Parameters (Billions): 
-            <input className="text-input-group"
+            Number of Parameters (Billions):
+            <input
+              className="text-input-group"
               type="number"
               min={1}
               max={1000}
@@ -85,7 +88,8 @@ function App() {
             <span className="info-icon">
               i
               <span className="tooltip-text">
-                The total number of model parameters in billions. For example, "13" means a 13B model.
+                The total number of model parameters in billions. For example,
+                "13" means a 13B model.
               </span>
             </span>
           </label>
@@ -97,14 +101,14 @@ function App() {
               value={params}
               onChange={(e) => setParams(Number(e.target.value))}
             />
-            
           </div>
           <label className="label-range">
             Model Quantization:
             <span className="info-icon">
               i
               <span className="tooltip-text">
-                The data format used to store model weights in GPU memory. For instance, F16 uses ~2GB per 1B params, Q4 ~0.5GB, etc.
+                The data format used to store model weights in GPU memory. For
+                instance, F16 uses ~2GB per 1B params, Q4 ~0.5GB, etc.
               </span>
             </span>
           </label>
@@ -127,7 +131,8 @@ function App() {
 
           <label className="label-range">
             Context Length (Tokens):
-            <input className="text-input-group"
+            <input
+              className="text-input-group"
               type="number"
               min={128}
               max={32768}
@@ -138,7 +143,8 @@ function App() {
             <span className="info-icon">
               i
               <span className="tooltip-text">
-                Maximum tokens (including prompt and history) available at once. Larger context = more memory usage.
+                Maximum tokens (including prompt and history) available at once.
+                Larger context = more memory usage.
               </span>
             </span>
           </label>
@@ -151,7 +157,6 @@ function App() {
               value={contextLength}
               onChange={(e) => setContextLength(Number(e.target.value))}
             />
-           
           </div>
 
           {/* Inference Mode */}
@@ -160,13 +165,16 @@ function App() {
             <span className="info-icon">
               i
               <span className="tooltip-text">
-                "Incremental" is streaming token-by-token generation, "Bulk" processes the entire context in one pass.
+                "Incremental" is streaming token-by-token generation, "Bulk"
+                processes the entire context in one pass.
               </span>
             </span>
           </label>
           <select
             value={inferenceMode}
-            onChange={(e) => setInferenceMode(e.target.value as 'incremental' | 'bulk')}
+            onChange={(e) =>
+              setInferenceMode(e.target.value as 'incremental' | 'bulk')
+            }
           >
             <option value="incremental">Incremental (streaming)</option>
             <option value="bulk">Bulk (all at once)</option>
@@ -185,7 +193,8 @@ function App() {
               <span className="info-icon">
                 i
                 <span className="tooltip-text">
-                  Reuses key/value attention states to accelerate decoding, at the cost of additional VRAM.
+                  Reuses key/value attention states to accelerate decoding, at
+                  the cost of additional VRAM.
                 </span>
               </span>
             </label>
@@ -196,19 +205,22 @@ function App() {
              We'll wrap it in a div that transitions "max-height"
              so the UI doesn't jump abruptly.
           */}
-          <div className={`kvCacheAnimate ${useKvCache ? "open" : "closed"}`}>
+          <div className={`kvCacheAnimate ${useKvCache ? 'open' : 'closed'}`}>
             <label className="label-range">
               KV Cache Quantization:
               <span className="info-icon">
                 i
                 <span className="tooltip-text">
-                  Data format for KV cache memory usage. Lower precision reduces memory but may affect performance/quality.
+                  Data format for KV cache memory usage. Lower precision reduces
+                  memory but may affect performance/quality.
                 </span>
               </span>
             </label>
             <select
               value={kvCacheQuant}
-              onChange={(e) => setKvCacheQuant(e.target.value as KvCacheQuantization)}
+              onChange={(e) =>
+                setKvCacheQuant(e.target.value as KvCacheQuantization)
+              }
             >
               <option value="F32">F32</option>
               <option value="F16">F16</option>
@@ -254,8 +266,9 @@ function App() {
           )}
 
           <label className="label-range">
-            System Memory (GB): 
-            <input className="text-input-group"
+            System Memory (GB):
+            <input
+              className="text-input-group"
               type="number"
               min={8}
               max={512}
@@ -264,7 +277,7 @@ function App() {
               onChange={(e) => handleInputChange(e, setSystemMemory)}
             />
           </label>
-           <div className="slider-input-group">
+          <div className="slider-input-group">
             <input
               type="range"
               min={8}
@@ -273,8 +286,7 @@ function App() {
               value={systemMemory}
               onChange={(e) => setSystemMemory(Number(e.target.value))}
             />
-           
-           </div>
+          </div>
         </div>
 
         {/* Right Panel: Results */}
@@ -282,11 +294,13 @@ function App() {
           <h2 className="section-title">Hardware Requirements</h2>
 
           <p>
-            <strong>VRAM Needed:</strong>{" "}
-            <span className="result-highlight">{recommendation.vramNeeded} GB</span>
+            <strong>VRAM Needed:</strong>{' '}
+            <span className="result-highlight">
+              {recommendation.vramNeeded} GB
+            </span>
           </p>
           <p>
-            <strong>On-Disk Size:</strong>{" "}
+            <strong>On-Disk Size:</strong>{' '}
             <span className="result-highlight">{onDiskSize.toFixed(2)} GB</span>
           </p>
           <p>
@@ -295,7 +309,8 @@ function App() {
 
           {recommendation.gpusRequired > 1 && (
             <p>
-              <strong>Number of GPUs Required:</strong> {recommendation.gpusRequired}
+              <strong>Number of GPUs Required:</strong>{' '}
+              {recommendation.gpusRequired}
             </p>
           )}
           {recommendation.gpusRequired === 1 && (
@@ -306,19 +321,18 @@ function App() {
 
           {memoryMode === 'DISCRETE_GPU' && (
             <p>
-              <strong>System RAM:</strong>{" "}
+              <strong>System RAM:</strong>{' '}
               {recommendation.systemRamNeeded.toFixed(1)} GB
             </p>
           )}
 
           {memoryMode === 'UNIFIED_MEMORY' && recommendation.fitsUnified && (
-            <p style={{ color: 'green' }}>
-              ✅ Fits in unified memory!
-            </p>
+            <p style={{ color: 'green' }}>✅ Fits in unified memory!</p>
           )}
           {memoryMode === 'UNIFIED_MEMORY' && !recommendation.fitsUnified && (
             <p style={{ color: 'red' }}>
-              ⚠️ Exceeds unified memory. Increase system RAM or reduce model size.
+              ⚠️ Exceeds unified memory. Increase system RAM or reduce model
+              size.
             </p>
           )}
         </div>
