@@ -10,7 +10,7 @@ export const Tooltip = ({ text, children }: TooltipProps) => {
   return (
     <span className="info-icon">
       {children}
-           <span className="tooltip-text">{text}</span>
+          <span className="tooltip-text">{text}</span>
     </span>
   );
 };
