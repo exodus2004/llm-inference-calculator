@@ -158,67 +158,20 @@ select {
   margin-bottom: 1rem;
 }
 
-/* ---------------------------------------
-   Expand / Collapse Animation for KV Cache
-   ---------------------------------------- */
-
-/* 
-   We'll use max-height + opacity to animate the expansion/collapse.
-   The 'closed' state is hidden with max-height: 0; and opacity: 0.
-   The 'open' state expands to max-height: 200px (adjust as needed)
-   and opacity: 1.
-*/
-/* Expand / Collapse Animation for KV Cache */
+/* KV Cache Animation */
 .kvCacheAnimate {
   overflow: hidden;
-  /* Moved transitions to here so it applies on all state changes */
   transition:
     max-height 0.3s ease-in-out,
     opacity 0.3s ease-in-out;
 }
 
-/* "open" state: expanded */
 .kvCacheAnimate.open {
-  max-height: 200px; /* adjust this to fit your content */
+  max-height: 200px;
   opacity: 1;
 }
 
-/* "closed" state: collapsed */
 .kvCacheAnimate.closed {
   max-height: 0;
   opacity: 0;
-}
-
-/* Info icon tooltip styles */
-.info-icon {
-  margin-left: 0.5rem;
-  background-color: var(--accent-color);
-  color: #fff;
-  display: inline-block;
-  text-align: center;
-  line-height: 1rem;
-  border-radius: 50%;
-  font-size: 0.75rem;
-  width: 1rem;
-  height: 1rem;
-  cursor: pointer;
-  position: relative;
-}
-
-.info-icon .tooltip-text {
-  display: none;
-  position: absolute;
-  background-color: #333;
-  color: #fff;
-  padding: 0.25rem;
-  font-size: 0.75rem;
-  border-radius: 4px;
-  top: 1.5rem;
-  left: 0;
-  width: 200px;
-  z-index: 999;
-}
-
-.info-icon:hover .tooltip-text {
-  display: block;
 }

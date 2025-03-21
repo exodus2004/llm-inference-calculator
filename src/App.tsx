@@ -5,6 +5,7 @@ import {
   calculateHardwareRecommendation,
   calculateOnDiskSize,
 } from './calculations';
+import { Tooltip } from './components/Tooltip';
 
 function App() {
   // -----------------------------------
@@ -85,13 +86,9 @@ function App() {
               value={params}
               onChange={(e) => handleInputChange(e, setParams)}
             />
-            <span className="info-icon">
+            <Tooltip text="The total number of model parameters in billions. For example, '13' means a 13B model.">
               i
-              <span className="tooltip-text">
-                The total number of model parameters in billions. For example,
-                "13" means a 13B model.
-              </span>
-            </span>
+            </Tooltip>
           </label>
           <div className="slider-input-group">
             <input
@@ -104,13 +101,9 @@ function App() {
           </div>
           <label className="label-range">
             Model Quantization:
-            <span className="info-icon">
+            <Tooltip text="The data format used to store model weights in GPU memory. For instance, F16 uses ~2GB per 1B params, Q4 ~0.5GB, etc.">
               i
-              <span className="tooltip-text">
-                The data format used to store model weights in GPU memory. For
-                instance, F16 uses ~2GB per 1B params, Q4 ~0.5GB, etc.
-              </span>
-            </span>
+            </Tooltip>
           </label>
           <select
             value={modelQuant}
@@ -140,13 +133,9 @@ function App() {
               value={contextLength}
               onChange={(e) => handleInputChange(e, setContextLength)}
             />
-            <span className="info-icon">
+            <Tooltip text="Maximum tokens (including prompt and history) available at once. Larger context = more memory usage.">
               i
-              <span className="tooltip-text">
-                Maximum tokens (including prompt and history) available at once.
-                Larger context = more memory usage.
-              </span>
-            </span>
+            </Tooltip>
           </label>
           <div className="slider-input-group">
             <input
@@ -162,13 +151,9 @@ function App() {
           {/* Inference Mode */}
           <label className="label-range">
             Inference Mode:
-            <span className="info-icon">
+            <Tooltip text="'Incremental' is streaming token-by-token generation, 'Bulk' processes the entire context in one pass.">
               i
-              <span className="tooltip-text">
-                "Incremental" is streaming token-by-token generation, "Bulk"
-                processes the entire context in one pass.
-              </span>
-            </span>
+            </Tooltip>
           </label>
           <select
             value={inferenceMode}
@@ -190,13 +175,9 @@ function App() {
             />
             <label htmlFor="kvCache">
               Enable KV Cache
-              <span className="info-icon">
+              <Tooltip text="Reuses key/value attention states to accelerate decoding, at the cost of additional VRAM.">
                 i
-                <span className="tooltip-text">
-                  Reuses key/value attention states to accelerate decoding, at
-                  the cost of additional VRAM.
-                </span>
-              </span>
+              </Tooltip>
             </label>
           </div>
 
@@ -208,13 +189,9 @@ function App() {
           <div className={`kvCacheAnimate ${useKvCache ? 'open' : 'closed'}`}>
             <label className="label-range">
               KV Cache Quantization:
-              <span className="info-icon">
+              <Tooltip text="Data format for KV cache memory usage. Lower precision reduces memory but may affect performance/quality.">
                 i
-                <span className="tooltip-text">
-                  Data format for KV cache memory usage. Lower precision reduces
-                  memory but may affect performance/quality.
-                </span>
-              </span>
+              </Tooltip>
             </label>
             <select
               value={kvCacheQuant}
