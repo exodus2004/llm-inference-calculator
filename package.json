@@ -9,15 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "prepare": "simple-git-hooks"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "npx lint-staged"
-  },
-  "lint-staged": {
-    "**/*.{js,jsx,ts,tsx,json,css,md}": [
-      "prettier --write"
-    ]
+    "prepare": "husky"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -32,10 +24,8 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.2",
+    "husky": "^9.1.7",
     "prettier": "^3.5.3",
-    "simple-git-hooks": "^2.12.1",
     "typescript": "~5.8.2",
     "typescript-eslint": "^8.27.0",
     "vite": "^6.2.0"
