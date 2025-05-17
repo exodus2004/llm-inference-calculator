@@ -34,7 +34,7 @@ npm run build
 ## Docker
 
 - to use Docker and docker compose first create a `.env` file based on the [.env.example](.env.example) and set a PORT that should be exposed
-- than run `docker compose up -d --build` to run the app
+- then run `docker compose up -d --build` to run the app
 
 ## Technical Notes
 
