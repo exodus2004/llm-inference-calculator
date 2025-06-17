@@ -1,6 +1,36 @@
 /* App.css */
 
 /* CSS Variables */
+/* Light mode defaults */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --card-bg: #f9f9f9;
+}
+
+/* Dark mode overrides */
+.dark-mode {
+  --bg-color: #121212;
+  --text-color: #ffffff;
+  --card-bg: #1e1e1e;
+}
+
+/* Global dark mode styles */
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode-button {
+  background: none;
+  border: 1px solid var(--text-color);
+  padding: 0.5em 1em;
+  cursor: pointer;
+  margin: 1em;
+  font-family: inherit;
+  font-size: 1em;
+}
 :root {
   --bg-color: #f7f8fa;
   --primary-color: #1976d2;

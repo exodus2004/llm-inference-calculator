@@ -6,6 +6,23 @@ import {
   calculateOnDiskSize,
 } from './calculations';
 import { Tooltip } from './components/Tooltip';
+import React from 'react';
+import DarkModeToggle from './components/DarkModeToggle'; // Import the new component
+import './App.css';
+
+const App: React.FC = () => {
+  return (
+    <div className="app">
+      <header>
+        <h1>LLM Inference Calculator</h1>
+        <DarkModeToggle /> {/* Add the dark mode toggle */}
+      </header>
+      {/* Existing calculator UI */}
+    </div>
+  );
+};
+
+export default App;
 
 function App() {
   // -----------------------------------
